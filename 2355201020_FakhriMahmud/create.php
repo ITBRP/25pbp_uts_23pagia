@@ -12,11 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $errors = [];
 
-$title          = $_POST['title'];
-$author         = $_POST['author'];
-$publisher      = $_POST['publisher'];
-$published_year = $_POST['published_year'];
-$isbn           = $_POST['isbn'];
+$title          = $_POST['title'] ?? null;
+$author         = $_POST['author'] ?? null;
+$publisher      = $_POST['publisher'] ?? null;
+$published_year = $_POST['published_year'] ?? null;
+$isbn           = $_POST['isbn']?? null;
 
 $pattern_combined = '/^(?=.{10,})[0-9-]+$/';
 
@@ -108,7 +108,7 @@ if (!empty($errors)) {
 }
 
 
-$koneksi = new mysqli("localhost", "root", "", "pbputs");
+$koneksi = @new mysqli("localhost", "root", "", "pbputs");
 
 if ($koneksi->connect_errno) {
     http_response_code(500);

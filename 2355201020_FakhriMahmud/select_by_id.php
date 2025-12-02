@@ -21,7 +21,7 @@ if (!$id) {
     exit;
 }
 
-$koneksi = new mysqli("localhost", "root", "", "pbputs");
+$koneksi = @new mysqli("localhost", "root", "", "pbputs");
 
 if ($koneksi->connect_errno) {
     http_response_code(500);

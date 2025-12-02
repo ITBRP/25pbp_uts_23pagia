@@ -1,16 +1,10 @@
 <?php
 header("Content-Type: application/json; charset=UTF-8");
-
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode([
-        'status' => 'error',
-        'msg' => 'Method Salah !'
-    ]);
-    exit;
+if (isset($_POST['_method']) && $_POST['_method'] === 'PUT') {
+    $_SERVER['REQUEST_METHOD'] = 'PUT';
 }
 
-$id = $_GET['id'];
+$id = $_GET['id'] ?? null;
 
 if (!$id || !ctype_digit($id)) {
     http_response_code(404);
@@ -20,60 +14,57 @@ if (!$id || !ctype_digit($id)) {
     ]);
     exit;
 }
+$koneksi = @new mysqli("localhost", "root", "", "pbputs");
 
-$title          = $_POST['title'];
-$author         = $_POST['author'];
-$publisher      = $_POST['publisher'];
-$published_year = $_POST['published_year'];
-$isbn           = $_POST['isbn'];
+if ($koneksi->connect_errno) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "msg" => "Server error"
+    ]);
+    exit;
+}
+$res = $koneksi->query("SELECT cover FROM buku WHERE id = '$id'");
+if (!$res || $res->num_rows == 0) {
+    http_response_code(404);
+    echo json_encode([
+        "status" => "error",
+        "msg" => "Data not found"
+    ]);
+    exit;
+}
+
+$oldData = $res->fetch_assoc();
+$oldCover = $oldData['cover'];
+
+
+$title          = $_POST['title'] ?? null;
+$author         = $_POST['author'] ?? null;
+$publisher      = $_POST['publisher'] ?? null;
+$published_year = $_POST['published_year'] ?? null;
+$isbn           = $_POST['isbn'] ?? null;
 
 $errors = [];
-$pattern_combined = '/^(?=.{10,})[0-9-]+$/';
 
-
-
-if (!isset($title)) {
-    $errors['title'] = "Title tidak dikirim";
-} else if ($title === "") {
-    $errors['title'] = "Title tidak boleh kosong";
-} else if (strlen($title) < 3) {
+if (strlen($title) < 3) {
     $errors['title'] = "Minimal 3 karakter";
 }
-
-if (!isset($author)) {
-    $errors['author'] = "Author tidak dikirim";
-} else if ($author === "") {
-    $errors['author'] = "Author tidak boleh kosong";
-} else if (preg_match('/[0-9]/', $author)) {
+if (preg_match('/[0-9]/', $author)) {
     $errors['author'] = "Tidak boleh mengandung angka";
 }
-
-if (!isset($publisher)) {
-    $errors['publisher'] = "Publisher tidak dikirim";
-} else if ($publisher === "") {
-    $errors['publisher'] = "Publisher tidak boleh kosong";
-} else if (strlen($publisher) > 100) {
+if (strlen($publisher) > 100) {
     $errors['publisher'] = "Maksimal 100 karakter";
 }
-
-if (!isset($published_year)) {
-    $errors['published_year'] = "published_year tidak dikirim";
-} else if ($published_year === "") {
-    $errors['published_year'] = "published_year tidak boleh kosong";
-} else if (!preg_match('/^[1-9][0-9]{3}$/', $published_year)) {
+if (!preg_match('/^[0-9]{4}$/', $published_year)) {
     $errors['published_year'] = "Format tahun tidak valid";
 }
-
-if (!isset($isbn)) {
-    $errors['isbn'] = "isbn tidak dikirim";
-} else if ($isbn === "") {
-    $errors['isbn'] = "isbn tidak boleh kosong";
-} else if (!preg_match($pattern_combined, $isbn)) {
-    $errors['isbn'] = "Format minimal 10 karakter, hanya angka & -";
+if (!preg_match('/^(?=.{10,})[0-9\-]+$/', $isbn)) {
+    $errors['isbn'] = "Format minimal 10 karakter, hanya angka dan '-'";
 }
 
 
-$coverBaru = null;
+
+$coverBaru = $oldCover;
 $fileExt = null;
 
 if (isset($_FILES['cover']) && $_FILES['cover']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -93,7 +84,7 @@ if (isset($_FILES['cover']) && $_FILES['cover']['error'] !== UPLOAD_ERR_NO_FILE)
 
 
 if (!empty($errors)) {
-    http_response_code(400);
+    http_response_code(405);
     echo json_encode([
         "status" => "error",
         "msg" => "Data error",
@@ -102,54 +93,19 @@ if (!empty($errors)) {
     exit;
 }
 
-
-
-$koneksi = new mysqli("localhost", "root", "", "pbputs");
-
-if ($koneksi->connect_errno) {
-    http_response_code(500);
-    echo json_encode([
-        "status" => "error",
-        "msg" => "Server error"
-    ]);
-    exit;
-}
-
-
-$res = $koneksi->query("SELECT cover FROM buku WHERE id = '$id'");
-if (!$res || $res->num_rows == 0) {
-    http_response_code(404);
-    echo json_encode([
-        "status" => "error",
-        "msg" => "Data not found"
-    ]);
-    exit;
-}
-
-$row = $res->fetch_assoc();
-$oldCover = $row['cover'];
-
-
-
 if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
 
-    
     $coverBaru = md5(uniqid()) . "." . $fileExt;
 
-    
     move_uploaded_file($_FILES['cover']['tmp_name'], "img/" . $coverBaru);
 
-    
+    // Hapus file lama
     if (!empty($oldCover)) {
-        $filePath = "img/" . $oldCover;
-        if (file_exists($filePath)) {
-            unlink($filePath);
+        $oldPath = "img/" . $oldCover;
+        if (file_exists($oldPath)) {
+            unlink($oldPath);
         }
     }
-
-} else {
-   
-    $coverBaru = $oldCover;
 }
 
 
@@ -188,4 +144,3 @@ echo json_encode([
         "cover" => $coverBaru
     ]
 ]);
-?>

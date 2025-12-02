@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 
-$koneksi = new mysqli("localhost", "root", "", "pbputs");
+$koneksi = @new mysqli("localhost", "root", "", "pbputs");
 
 if ($koneksi->connect_errno) {
     http_response_code(500);

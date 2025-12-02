@@ -25,7 +25,7 @@ if (!$id || !ctype_digit($id)) {
 }
 
 
-$koneksi = new mysqli("localhost", "root", "", "pbputs");
+$koneksi = @new mysqli("localhost", "root", "", "pbputs");
 
 if ($koneksi->connect_errno) {
     http_response_code(500);
@@ -67,7 +67,7 @@ echo json_encode([
     "msg"    => "Delete data success",
     "data"   => [
         "id" => $id,
-        "deleted_cover" => $data['cover']
+        
     ]
 ]);
 ?>
