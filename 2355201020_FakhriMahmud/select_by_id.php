@@ -1,21 +1,18 @@
 <?php
 header("Content-Type: application/json; charset=UTF-8");
 
-
-if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode([
-        "status" => "error",
-        "msg" => "Method Salah !"
+        'status' => 'error',
+        'msg' => 'Method Salah !'
     ]);
     exit;
 }
 
-
 $id = $_GET['id'];
 
-// Validasi ID
-if (!$id || !ctype_digit($id)) {
+if (!$id) {
     http_response_code(404);
     echo json_encode([
         "status" => "error",
@@ -23,7 +20,6 @@ if (!$id || !ctype_digit($id)) {
     ]);
     exit;
 }
-
 
 $koneksi = new mysqli("localhost", "root", "", "pbputs");
 
@@ -36,11 +32,10 @@ if ($koneksi->connect_errno) {
     exit;
 }
 
-$sqlcek = "SELECT * FROM buku WHERE id = $id";
-$query  = mysqli_query($koneksi, $sqlcek);
-$data   = mysqli_fetch_assoc($query);
+$q = "SELECT * FROM buku WHERE id = '$id'";
+$res = $koneksi->query($q);
 
-if (!$data) {
+if (!$res || $res->num_rows == 0) {
     http_response_code(404);
     echo json_encode([
         "status" => "error",
@@ -49,25 +44,12 @@ if (!$data) {
     exit;
 }
 
-if (!empty($data['cover'])) {
-    $filePath = "img/" . $data['cover'];
+$row = $res->fetch_assoc();
 
-    if (file_exists($filePath)) {
-        unlink($filePath);
-    }
-}
-
-
-$sqlDelete = "DELETE FROM buku WHERE id = $id";
-$delete = mysqli_query($koneksi, $sqlDelete);
-
-
+http_response_code(200);
 echo json_encode([
     "status" => "success",
-    "msg"    => "Delete data success",
-    "data"   => [
-        "id" => $id,
-        "deleted_cover" => $data['cover']
-    ]
+    "msg" => "Process success",
+    "data" => $row
 ]);
 ?>
