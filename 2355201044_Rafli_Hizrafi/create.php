@@ -56,7 +56,7 @@ if (!isset($_POST['published_year'])) {
         $errors['published_year'] = "published_year tidak boleh kosong";
     } else {
         if (!preg_match('/^[0-9]{4}$/', $_POST['published_year'])) {
-            $errors['published_year'] = "published_year harus 4 digit angka";
+            $errors['published_year'] = "format tahun tidak valid";
         }
     }
 }
@@ -85,7 +85,7 @@ if (isset($_FILES['cover'])) {
         $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
         if (!in_array($ext, $allowedExt)) {
-            $errors['cover'] = "File cover harus jpg/jpeg/png";
+            $errors['cover'] = "Format file tidak valid jpg/jpeg/png";
         } else {
             $coverName = md5(date('dmyhis')) . "." . $ext;
         }
