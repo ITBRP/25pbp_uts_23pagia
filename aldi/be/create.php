@@ -69,11 +69,11 @@ if (!isset($_POST['isbn'])) {
     } else {
         if (!preg_match('/^[0-9-]+$/', $_POST['isbn'])) {
             $errors['isbn'] = "Format ISBN hanya boleh angka dan '-'";
+        }else{
+
         }
     }
 }
-
-
 
 $anyPhoto = false;
 $namaFile = null;
