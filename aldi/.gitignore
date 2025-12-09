@@ -1,2 +1,2 @@
 be/img/*
-# !be/img/.gitkeep
+!be/img/.gitkeep
