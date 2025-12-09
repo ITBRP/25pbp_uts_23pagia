@@ -1,0 +1,34 @@
+<?php
+header("Content-Type: application/json; charset=UTF-8");
+// validasi method
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    http_response_code(405);
+    echo json_encode([
+        'status' => 'error',
+        'msg' => 'Method Salah !'
+    ]);
+    exit;
+}
+
+$koneksi = new mysqli('localhost', 'root', '', '25pbuts_pagia');
+
+// NULL jika tidak upload file
+$id = $_GET['id'];
+$q = "SELECT * FROM books WHERE id=$id";
+$dtQuery = mysqli_query($koneksi, $q);
+
+if(mysqli_num_rows($dtQuery)==0){
+    http_response_code(404);
+    echo json_encode([
+        'status' => 'error',
+        'msg' => 'Data not found'
+    ]);
+    exit;
+}
+
+$data = mysqli_fetch_assoc($dtQuery);
+echo json_encode([
+    'status' => 'success',
+    'msg' => 'Proses berhasil',
+    'data' => $data
+]);
