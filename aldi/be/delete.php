@@ -26,7 +26,10 @@ if(mysqli_num_rows($dtQuery)==0){
     exit;
 }else{
     $coverLama = (mysqli_fetch_array($dtQuery))['cover'];
-    unlink('img/'.$coverLama);
+    if (!is_null($coverLama)) {
+        unlink('img/'.$coverLama);
+    }
+    
 }
 
 $q = "DELETE FROM books WHERE id=$id";
